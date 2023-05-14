@@ -1,19 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity , TextInput} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import SendSMS from 'react-native-sms';
-
+import { API_KEY, PUBLIC_TEST_KEY ,SECRET_KEY} from '@env';
 const GetStartedScreen = () => {
   const navigation = useNavigation();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOTP] = useState('');
 
-  useEffect(() => {
-    if (otp !== '') {
-      navigateToVerificationScreen();
-    }
-  }, [otp]);
+  const generateOTP = () => {
+    // Generate a random 4-digit OTP
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  };
 
   const handleButtonClick = async () => {
     if (phoneNumber === '') {
@@ -22,37 +20,34 @@ const GetStartedScreen = () => {
     }
 
     const generatedOTP = generateOTP(); // Generate OTP
+
     const message = `Your OTP is: ${generatedOTP}`;
 
-    sendSMS(phoneNumber, message);
-    setOTP(generatedOTP);
-  };
-
-  const sendSMS = async (phoneNumber, message) => {
-    const apiKey = 'TL2AQ5PrkFArJJiCNrS6JzHhAJb54pVe6Xi0qOCKjisk0zDXU5nt5C5EEBjp5L'; // Replace with your actual API key
-    const termiiEndpoint = 'https://api.ng.termii.com/api/sms/otp/send';
-
     try {
-      const response = await axios.post(termiiEndpoint, {
-        api_key: apiKey,
-        to: phoneNumber,
-        from: 'Abubakar', // Replace with your desired sender name
-        sms: message,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        'https://api.getspendo.com/gateway/api/v1/send/sms/otp',
+        {
+          from: 'Northino Learning',
+          message: message,
+          to: phoneNumber,
         },
-      });
+        {
+          headers: {
+            apiKey: API_KEY,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-      console.log('SMS sent successfully', response.data);
+      console.log(response.data);
+
+      setOTP(generatedOTP); // Save OTP in state
+
+      navigateToVerificationScreen(); // Navigate to verification screen
+
     } catch (error) {
-      console.error('Error sending SMS', error);
+      console.log("There is an error " + error);
     }
-  };
-
-  const generateOTP = () => {
-    // Generate a random 4-digit OTP
-    return Math.floor(1000 + Math.random() * 9000).toString();
   };
 
   const navigateToVerificationScreen = () => {
@@ -119,5 +114,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
 export default GetStartedScreen;

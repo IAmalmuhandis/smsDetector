@@ -1,70 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import SendSMS from 'react-native-sms';
+import axios from 'axios';
 
-const OTPScreen = ({ route }) => {
-  const [verificationCode, setVerificationCode] = useState(['', '', '', '']);
-  const [bodySMS, setBodySMS] = useState("");
+const GetStartedScreen = () => {
   const navigation = useNavigation();
-  const otp = route.params.otp;
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOTP] = useState('');
 
-  useEffect(() => {
-    if (otp !== '') {
-      setVerificationCode(otp.split(''));
+  const generateOTP = () => {
+    // Generate a random 4-digit OTP
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  };
+
+  const handleButtonClick = async () => {
+    if (phoneNumber === '') {
+      console.log('Please enter a phone number');
+      return;
     }
-  }, [otp]);
+
+    const generatedOTP = generateOTP(); // Generate OTP
+    const message = `Your OTP is: ${generatedOTP}`;
+
+    try {
+      const response = await axios.post(
+        'https://api.getspendo.com/gateway/api/v1/send/sms/otp',
+        {
+            "from": "absheikh",
+            "otp": "string",
+            "to": "09074748664"
+          },
+        {
+          headers: {
+            apiKey: 'pk_live_ZYXU5fBEOgM8SZYY7MN9jfGSdMRcTMa7k7C1AebV2IBE75dRY2',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      console.log(response.data);
+
+      setOTP(generatedOTP); // Save OTP in state
+      navigateToVerificationScreen(); // Navigate to verification screen
+    } catch (error) {
+      console.log('There is an error:', error);
+    }
+  };
 
   const navigateToVerificationScreen = () => {
     // Navigate to Code Verification screen and pass the OTP as a parameter
     navigation.navigate('CodeVerification', { otp });
   };
 
-  const handleVerifyButton = () => {
-    // Verify the entered code
-    // You can implement your code verification logic here
-  };
-
-  const handleChangeCode = (index, text) => {
-    const newVerificationCode = [...verificationCode];
-    newVerificationCode[index] = text;
-    setVerificationCode(newVerificationCode);
-  };
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Code Verification Screen</Text>
-      <View style={styles.otpContainer}>
-        <TextInput
-          style={styles.otpInput}
-          onChangeText={text => handleChangeCode(0, text)}
-          value={verificationCode[0]}
-          maxLength={1}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.otpInput}
-          onChangeText={text => handleChangeCode(1, text)}
-          value={verificationCode[1]}
-          maxLength={1}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.otpInput}
-          onChangeText={text => handleChangeCode(2, text)}
-          value={verificationCode[2]}
-          maxLength={1}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.otpInput}
-          onChangeText={text => handleChangeCode(3, text)}
-          value={verificationCode[3]}
-          maxLength={1}
-          keyboardType="numeric"
-        />
-      </View>
-      <Button title="Verify" onPress={handleVerifyButton} />
+      <Image source={require('../assets/snowy.jpg')} style={styles.image} />
+      <Text style={styles.label}>Enter Phone Number:</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={setPhoneNumber}
+        value={phoneNumber}
+        keyboardType="phone-pad"
+      />
+      <TouchableOpacity style={styles.button} onPress={handleButtonClick}>
+        <Text style={styles.buttonText}>Get Started</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -76,24 +75,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#E0E0E0',
   },
-  title: {
-    fontSize: 18,
+  image: {
+    marginTop: -150,
+    width: 500,
+    height: 500,
+    borderBottomRightRadius: 300,
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 10,
   },
-  otpContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  otpInput: {
-    height: 50,
-    width: 50,
+  input: {
+    width: '70%',
+    height: 40,
     borderWidth: 1,
     borderColor: 'gray',
-    marginHorizontal: 5,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    width: '70%',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
     textAlign: 'center',
-    fontSize: 24,
   },
 });
 
-export default OTPScreen;
+export default GetStartedScreen;
