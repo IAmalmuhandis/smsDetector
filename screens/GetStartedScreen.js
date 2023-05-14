@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity , TextInput} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import * as SMS from 'expo-sms';
+import axios from 'axios';
+import SendSMS from 'react-native-sms';
 
 const GetStartedScreen = () => {
   const navigation = useNavigation();
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOTP] = useState('');
 
   useEffect(() => {
@@ -14,30 +16,38 @@ const GetStartedScreen = () => {
   }, [otp]);
 
   const handleButtonClick = async () => {
-    // Generate and send SMS with OTP
-    const phoneNumber = '08123402377'; // Replace with the desired phone number
-    const generatedOTP = generateOTP(); // Generate OTP
+    if (phoneNumber === '') {
+      console.log('Please enter a phone number');
+      return;
+    }
 
+    const generatedOTP = generateOTP(); // Generate OTP
     const message = `Your OTP is: ${generatedOTP}`;
 
-    // try {
-  
-    //   if (result === SMS.SentStatus.Sent) {
-    //     console.log('SMS sent successfully');
-    //     setOTP(generatedOTP);
-    //   } else {
-    //     console.log('Failed to send SMS');
-    //   }
-    // } catch (error) {
-    //     navigation.navigate('CodeVerification', { otp });
-       
-    //   console.log('Error sending SMS:', error);
-    // }
-    const { result } = await SMS.sendSMSAsync([phoneNumber], message);
-    console.log('SMS sent successfully');
-        setOTP(generatedOTP);
-        navigation.navigate('CodeVerification', { otp });
+    sendSMS(phoneNumber, message);
+    setOTP(generatedOTP);
+  };
 
+  const sendSMS = async (phoneNumber, message) => {
+    const apiKey = 'TL2AQ5PrkFArJJiCNrS6JzHhAJb54pVe6Xi0qOCKjisk0zDXU5nt5C5EEBjp5L'; // Replace with your actual API key
+    const termiiEndpoint = 'https://api.ng.termii.com/api/sms/otp/send';
+
+    try {
+      const response = await axios.post(termiiEndpoint, {
+        api_key: apiKey,
+        to: phoneNumber,
+        from: 'Abubakar', // Replace with your desired sender name
+        sms: message,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('SMS sent successfully', response.data);
+    } catch (error) {
+      console.error('Error sending SMS', error);
+    }
   };
 
   const generateOTP = () => {
@@ -53,6 +63,13 @@ const GetStartedScreen = () => {
   return (
     <View style={styles.container}>
       <Image source={require('../assets/snowy.jpg')} style={styles.image} />
+      <Text style={styles.label}>Enter Phone Number:</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={setPhoneNumber}
+        value={phoneNumber}
+        keyboardType="phone-pad"
+      />
       <TouchableOpacity style={styles.button} onPress={handleButtonClick}>
         <Text style={styles.buttonText}>Get Started</Text>
       </TouchableOpacity>
@@ -74,12 +91,25 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 300,
     marginBottom: 20,
   },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    width: '70%',
+    height: 40,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
   button: {
     backgroundColor: '#007AFF',
     borderRadius: 8,
     paddingVertical: 20,
     paddingHorizontal: 20,
-    marginTop: 100,
     width: '70%',
   },
   buttonText: {

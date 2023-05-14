@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import SendSMS from 'react-native-sms';
 
 const OTPScreen = ({ route }) => {
   const [verificationCode, setVerificationCode] = useState(['', '', '', '']);
+  const [bodySMS, setBodySMS] = useState("");
   const navigation = useNavigation();
   const otp = route.params.otp;
 

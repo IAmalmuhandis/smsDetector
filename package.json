@@ -12,6 +12,7 @@
     "@expo/vector-icons": "^13.0.0",
     "@react-navigation/native": "^6.1.6",
     "@react-navigation/stack": "^6.3.16",
+    "axios": "^1.4.0",
     "expo": "~48.0.10",
     "expo-barcode-scanner": "~12.3.2",
     "expo-camera": "~13.2.1",
@@ -20,7 +21,9 @@
     "react": "18.2.0",
     "react-native": "0.71.6",
     "react-native-gesture-handler": "^2.10.0",
+    "react-native-otp-verify": "^1.1.4",
     "react-native-sms": "^1.11.0",
+    "react-native-sms-retriever": "^1.1.1",
     "react-native-swiper": "^1.6.0",
     "react-native-vision-camera": "^2.15.4"
   },
