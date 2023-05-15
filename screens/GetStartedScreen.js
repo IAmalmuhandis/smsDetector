@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import { API_KEY, PUBLIC_TEST_KEY ,SECRET_KEY} from '@env';
+import { encode } from 'base-64';
+
 const GetStartedScreen = () => {
   const navigation = useNavigation();
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOTP] = useState('');
 
   const generateOTP = () => {
     // Generate a random 4-digit OTP
@@ -21,38 +21,34 @@ const GetStartedScreen = () => {
 
     const generatedOTP = generateOTP(); // Generate OTP
 
-    const message = `Your OTP is: ${generatedOTP}`;
-
     try {
+      const accountSid = 'AC05de73e04d00099ddf28737cab1b507e';
+      const authToken = 'e5c631a524572b17ddabca8f4dbd471b';
+      const credentials = `${accountSid}:${authToken}`;
+      const encodedCredentials = encode(credentials);
+
       const response = await axios.post(
-        'https://api.getspendo.com/gateway/api/v1/send/sms/otp',
+        'https://api.twilio.com/2010-04-01/Accounts/AC05de73e04d00099ddf28737cab1b507e/Messages.json',
         {
-          from: 'Northino Learning',
-          message: message,
-          to: phoneNumber,
+          Body: `Your OTP is: ${generatedOTP}`,
+          From: '+12057724716',
+          To: phoneNumber,
         },
         {
           headers: {
-            apiKey: API_KEY,
-            'Content-Type': 'application/json',
+            Authorization: `Basic ${encodedCredentials}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
         }
       );
 
       console.log(response.data);
 
-      setOTP(generatedOTP); // Save OTP in state
-
-      navigateToVerificationScreen(); // Navigate to verification screen
-
+      // Navigate to the next screen
+      navigation.navigate('CodeVerification');
     } catch (error) {
-      console.log("There is an error " + error);
+      console.log('There is an error:', error.response.data);
     }
-  };
-
-  const navigateToVerificationScreen = () => {
-    // Navigate to Code Verification screen and pass the OTP as a parameter
-    navigation.navigate('CodeVerification', { otp });
   };
 
   return (
@@ -114,4 +110,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
 export default GetStartedScreen;

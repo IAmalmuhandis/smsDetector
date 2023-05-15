@@ -1,69 +1,70 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import * as Permissions from 'expo-permissions';
+import { SMS } from 'expo-sms';
 
-const GetStartedScreen = () => {
-  const navigation = useNavigation();
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOTP] = useState('');
+const OTPScreen = () => {
+  const [verificationCode, setVerificationCode] = useState(['', '', '', '']);
 
-  const generateOTP = () => {
-    // Generate a random 4-digit OTP
-    return Math.floor(1000 + Math.random() * 9000).toString();
+  const handleVerificationCodeChange = (index, value) => {
+    const updatedVerificationCode = [...verificationCode];
+    updatedVerificationCode[index] = value;
+    setVerificationCode(updatedVerificationCode);
   };
 
-  const handleButtonClick = async () => {
-    if (phoneNumber === '') {
-      console.log('Please enter a phone number');
-      return;
-    }
-
-    const generatedOTP = generateOTP(); // Generate OTP
-    const message = `Your OTP is: ${generatedOTP}`;
-
+  const requestSMSPermission = async () => {
     try {
-      const response = await axios.post(
-        'https://api.getspendo.com/gateway/api/v1/send/sms/otp',
-        {
-            "from": "absheikh",
-            "otp": "string",
-            "to": "09074748664"
-          },
-        {
-          headers: {
-            apiKey: 'pk_live_ZYXU5fBEOgM8SZYY7MN9jfGSdMRcTMa7k7C1AebV2IBE75dRY2',
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      console.log(response.data);
-
-      setOTP(generatedOTP); // Save OTP in state
-      navigateToVerificationScreen(); // Navigate to verification screen
+      const { status } = await Permissions.askAsync(Permissions.SMS);
+      if (status === 'granted') {
+        console.log('SMS permission granted');
+      } else {
+        console.log('SMS permission denied');
+      }
     } catch (error) {
-      console.log('There is an error:', error);
+      console.log('Error requesting SMS permission:', error);
     }
   };
 
-  const navigateToVerificationScreen = () => {
-    // Navigate to Code Verification screen and pass the OTP as a parameter
-    navigation.navigate('CodeVerification', { otp });
+  useEffect(() => {
+    requestSMSPermission();
+  }, []);
+
+  const handleSmsReceived = (sms) => {
+    const otpRegex = /(\d{4})/; // Modify the regex pattern according to your OTP format
+    const otpMatch = sms.body.match(otpRegex);
+    if (otpMatch && otpMatch[0]) {
+      const otpCode = otpMatch[0];
+      setVerificationCode(otpCode.split(''));
+    }
+  };
+
+  useEffect(() => {
+    const subscription = SMS.addListener(handleSmsReceived);
+    return () => subscription.remove();
+  }, []);
+
+  const handleVerifyButton = () => {
+    const code = verificationCode.join('');
+    // Verify the entered code
+    // You can implement your code verification logic here
   };
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/snowy.jpg')} style={styles.image} />
-      <Text style={styles.label}>Enter Phone Number:</Text>
-      <TextInput
-        style={styles.input}
-        onChangeText={setPhoneNumber}
-        value={phoneNumber}
-        keyboardType="phone-pad"
-      />
-      <TouchableOpacity style={styles.button} onPress={handleButtonClick}>
-        <Text style={styles.buttonText}>Get Started</Text>
-      </TouchableOpacity>
+      <Text style={styles.title}>Code Verification Screen</Text>
+      <View style={styles.otpContainer}>
+        {[0, 1, 2, 3].map((index) => (
+          <TextInput
+            key={index}
+            style={styles.otpInput}
+            onChangeText={(text) => handleVerificationCodeChange(index, text)}
+            value={verificationCode[index]}
+            maxLength={1}
+            keyboardType="numeric"
+          />
+        ))}
+      </View>
+      <Button title="Verify" onPress={handleVerifyButton} />
     </View>
   );
 };
@@ -75,40 +76,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#E0E0E0',
   },
-  image: {
-    marginTop: -150,
-    width: 500,
-    height: 500,
-    borderBottomRightRadius: 300,
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 20,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  otpContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
   },
-  input: {
-    width: '70%',
-    height: 40,
+  otpInput: {
+    flex: 1,
+    height: 50,
     borderWidth: 1,
     borderColor: 'gray',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    width: '70%',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    marginHorizontal: 5,
     textAlign: 'center',
+    fontSize: 24,
+    borderRadius: 8,
   },
 });
 
-export default GetStartedScreen;
+export default OTPScreen;

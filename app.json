@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "basicapp",
+     "name": "basicapp",
     "plugins": [
       [
         "expo-camera",
@@ -38,8 +38,7 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "READ_SMS",
-        "RECEIVE_SMS"
+        "READ_SMS"
       ]
     },
     "web": {
