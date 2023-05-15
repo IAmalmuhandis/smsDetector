@@ -29,17 +29,11 @@ const GetStartedScreen = () => {
 		const generatedOTP = generateOTP(); // Generate OTP
 
 		try {
-			// const accountSid = "AC05de73e04d00099ddf28737cab1b507e";
-			// const authToken = "3a76e8ae4ea5146a86a6717bf8a4d6b0";
-			const accountSid = "ACa0b17565409d340f2cbd3906b0dfca39";
-			const authToken = "f93afb38d49f015a1eef0303b9f87753";
-			const credentials = `${accountSid}:${authToken}`;
-			const encodedCredentials = encode(credentials);
+			// // const accountSid = "AC05de73e04d00099ddf28737cab1b507e";
+			// // const authToken = "3a76e8ae4ea5146a86a6717bf8a4d6b0";
+			// const credentials = `${accountSid}:${authToken}`;
+			// const encodedCredentials = encode(credentials);
 
-			// console.log({
-			// 	phone_number: phoneNo,
-			// 	role: "rider",
-			// });
 			const response = await axios.post(
 				"https://api.saferide.com.ng/authentication/signup/initialize",
 				{
@@ -47,20 +41,6 @@ const GetStartedScreen = () => {
 					role: "rider",
 				}
 			);
-			// const response = await axios.post(
-			// 	"https://api.twilio.com/2010-04-01/Accounts/ACa0b17565409d340f2cbd3906b0dfca39/Messages.json",
-			// 	{
-			// 		Body: `Your OTP is: ${generatedOTP}`,
-			// 		From: "",
-			// 		To: phoneNumber,
-			// 	},
-			// 	{
-			// 		headers: {
-			// 			Authorization: `Basic ${encodedCredentials}`,
-			// 			"Content-Type": "application/x-www-form-urlencoded",
-			// 		},
-			// 	}
-			// );
 
 			console.log(response.data);
 
