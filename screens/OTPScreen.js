@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
-import * as Permissions from 'expo-permissions';
-import { SMS } from 'expo-sms';
+import { PermissionsAndroid } from "react-native";
+import {
+  startReadSMS,
+  stopReadSMS,
+} from "@maniac-tech/react-native-expo-read-sms";
 
 const OTPScreen = () => {
   const [verificationCode, setVerificationCode] = useState(['', '', '', '']);
+  const [hasReceiveSMSPermission, setHasReceiveSMSPermission] = useState(false);
+  const [hasReadSMSPermission, setHasReadSMSPermission] = useState(false);
 
   const handleVerificationCodeChange = (index, value) => {
     const updatedVerificationCode = [...verificationCode];
@@ -12,42 +17,70 @@ const OTPScreen = () => {
     setVerificationCode(updatedVerificationCode);
   };
 
-  const requestSMSPermission = async () => {
-    try {
-      const { status } = await Permissions.askAsync(Permissions.SMS);
-      if (status === 'granted') {
-        console.log('SMS permission granted');
-      } else {
-        console.log('SMS permission denied');
-      }
-    } catch (error) {
-      console.log('Error requesting SMS permission:', error);
-    }
-  };
-
-  useEffect(() => {
-    requestSMSPermission();
-  }, []);
-
-  const handleSmsReceived = (sms) => {
-    const otpRegex = /(\d{4})/; // Modify the regex pattern according to your OTP format
-    const otpMatch = sms.body.match(otpRegex);
-    if (otpMatch && otpMatch[0]) {
-      const otpCode = otpMatch[0];
-      setVerificationCode(otpCode.split(''));
-    }
-  };
-
-  useEffect(() => {
-    const subscription = SMS.addListener(handleSmsReceived);
-    return () => subscription.remove();
-  }, []);
-
   const handleVerifyButton = () => {
     const code = verificationCode.join('');
     // Verify the entered code
     // You can implement your code verification logic here
   };
+
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const customHasReceiveSMSPermission = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.RECEIVE_SMS
+      );
+      const customHasReadSMSPermission = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.READ_SMS
+      );
+
+      setHasReceiveSMSPermission(customHasReceiveSMSPermission);
+      setHasReadSMSPermission(customHasReadSMSPermission);
+    };
+
+    const requestSMSPermission = async () => {
+      try {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.READ_SMS,
+          PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+        ]);
+
+        if (
+          granted['android.permission.READ_SMS'] === PermissionsAndroid.RESULTS.GRANTED &&
+          granted['android.permission.RECEIVE_SMS'] === PermissionsAndroid.RESULTS.GRANTED
+        ) {
+          console.log('SMS permission granted');
+          checkPermissions();
+        } else {
+          console.log('SMS permission denied');
+        }
+      } catch (error) {
+        console.log('Error requesting SMS permission:', error);
+      }
+    };
+
+    requestSMSPermission();
+  }, []);
+
+  useEffect(() => {
+    const handleSmsReceived = (status, sms, error) => {
+      if (status === 'Start Read SMS successfully' || status === 'success') {
+        console.log('SMS received');
+        console.log('SMS:', sms);
+        // Add your SMS handling logic here
+      } else {
+        console.log('Error in success callback');
+        console.log('Error:', error);
+      }
+    };
+
+    if (hasReceiveSMSPermission && hasReadSMSPermission) {
+      const subscription = startReadSMS(handleSmsReceived);
+      return () => {
+        stopReadSMS();
+        subscription.remove();
+      };
+    }
+  }, [hasReceiveSMSPermission, hasReadSMSPermission]);
+
 
   return (
     <View style={styles.container}>
@@ -68,6 +101,7 @@ const OTPScreen = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

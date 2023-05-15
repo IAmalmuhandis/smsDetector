@@ -23,7 +23,7 @@ const GetStartedScreen = () => {
 
     try {
       const accountSid = 'AC05de73e04d00099ddf28737cab1b507e';
-      const authToken = 'e5c631a524572b17ddabca8f4dbd471b';
+      const authToken = '3a76e8ae4ea5146a86a6717bf8a4d6b0';
       const credentials = `${accountSid}:${authToken}`;
       const encodedCredentials = encode(credentials);
 
