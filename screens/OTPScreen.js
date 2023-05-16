@@ -19,6 +19,9 @@ const OTPScreen = () => {
 
   const handleVerifyButton = () => {
     const code = verificationCode.join('');
+    console.log('Entered code:', code);
+    console.log(hasReadSMSPermission);
+    console.log(hasReceiveSMSPermission);
     // Verify the entered code
     // You can implement your code verification logic here
   };
@@ -61,19 +64,27 @@ const OTPScreen = () => {
   }, []);
 
   useEffect(() => {
-    const handleSmsReceived = (status, sms, error) => {
-      if (status === 'Start Read SMS successfully' || status === 'success') {
-        console.log('SMS received');
-        console.log('SMS:', sms);
-        // Add your SMS handling logic here
-      } else {
-        console.log('Error in success callback');
-        console.log('Error:', error);
+    const handleSmsReceived = (sms) => {
+      console.log('SMS received');
+      console.log('SMS:', sms);
+
+      // Extract the verification code from the SMS
+      const regex = /(\d{4})/; // assuming the verification code is a 4-digit number
+      const match = sms.match(regex);
+      if (match) {
+        const code = match[1];
+        console.log('Autofilled code:', code);
+        setVerificationCode(code.split('')); // Update the state with the received code
       }
     };
 
+    const handleError = (error) => {
+      console.log('Error in SMS callback');
+      console.log('Error:', error);
+    };
+
     if (hasReceiveSMSPermission && hasReadSMSPermission) {
-      const subscription = startReadSMS(handleSmsReceived);
+      const subscription = startReadSMS(handleSmsReceived, handleError);
       return () => {
         stopReadSMS();
         subscription.remove();

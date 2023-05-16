@@ -1,6 +1,6 @@
 {
   "expo": {
-     "name": "basicapp",
+     "name": "SMSDETECTOR",
     "plugins": [
       [
         "expo-camera",
@@ -38,7 +38,8 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "READ_SMS"
+        "READ_SMS",
+        "RECEIVE_SMS"
       ]
     },
     "web": {
