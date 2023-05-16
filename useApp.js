@@ -8,8 +8,8 @@ import {
 
 const useApp = () => {
   const [appState, setAppState] = useState(null);
-  const [hasReceiveSMSPermission, setHasReceiveSMSPermission] = useState(null);
-  const [hasReadSMSPermission, setHasReadSMSPermission] = useState(null);
+  const [hasReceiveSMSPermission, setHasReceiveSMSPermission] = useState(false);
+  const [hasReadSMSPermission, setHasReadSMSPermission] = useState(false);
   const [smsPermissionState, setSmsPermissionState] = useState(null);
   const [successCallbackStatus, setSuccessCallbackStatus] = useState(null);
   const [errorCallbackStatus, setErrorCallbackStatus] = useState(null);
@@ -53,6 +53,30 @@ const useApp = () => {
     setAppState("Permission check complete");
   };
 
+  const requestSMSPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+        PermissionsAndroid.PERMISSIONS.READ_SMS,
+      ]);
+
+      if (
+        granted["android.permission.RECEIVE_SMS"] ===
+          PermissionsAndroid.RESULTS.GRANTED &&
+        granted["android.permission.READ_SMS"] ===
+          PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        setHasReceiveSMSPermission(true);
+        setHasReadSMSPermission(true);
+      } else {
+        setHasReceiveSMSPermission(false);
+        setHasReadSMSPermission(false);
+      }
+    } catch (error) {
+      console.error("Error while requesting SMS permission:", error);
+    }
+  };
+
   useEffect(() => {
     setAppState("init");
     checkPermissions();
@@ -60,6 +84,15 @@ const useApp = () => {
 
   useEffect(() => {
     if (hasReceiveSMSPermission && hasReadSMSPermission) {
+      console.log("hasReadSMSPermission: ", hasReadSMSPermission);
+      console.log("hasReceiveSMSPermission: ", hasReceiveSMSPermission);
+    }
+  }, [hasReceiveSMSPermission, hasReadSMSPermission]);
+
+  useEffect(() => {
+    if (hasReceiveSMSPermission && hasReadSMSPermission) {
+      console.log("hasReadSMSPermission: ", hasReadSMSPermission);
+      console.log("hasReceiveSMSPermission: ", hasReceiveSMSPermission);
     }
   }, [hasReceiveSMSPermission, hasReadSMSPermission]);
 
@@ -70,7 +103,7 @@ const useApp = () => {
     errorCallbackStatus,
     hasReceiveSMSPermission,
     hasReadSMSPermission,
-    requestReadSMSPermission, // Include the requestReadSMSPermission function
+    requestReadSMSPermission : requestSMSPermission, // Include the requestReadSMSPermission function
     smsPermissionState,
     successCallbackStatus,
     smsValue,

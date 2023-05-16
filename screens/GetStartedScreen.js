@@ -1,73 +1,67 @@
-import React, { useState } from "react";
-import {
-	View,
-	Text,
-	Image,
-	StyleSheet,
-	TouchableOpacity,
-	TextInput,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { encode } from "base-64";
+import useApp from "../useApp";
 
 const GetStartedScreen = () => {
-	const navigation = useNavigation();
-	const [phoneNumber, setPhoneNumber] = useState("");
+  const navigation = useNavigation();
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const { requestReadSMSPermission } = useApp(); // Add requestReadSMSPermission from useApp
 
-	const generateOTP = () => {
-		// Generate a random 4-digit OTP
-		return Math.floor(1000 + Math.random() * 9000).toString();
-	};
+  useEffect(() => {
+    requestReadSMSPermission(); // Request SMS permissions when the component mounts
+  }, []);
 
-	const handleButtonClick = async () => {
-		if (phoneNumber === "") {
-			console.log("Please enter a phone number");
-			return;
-		}
+  const generateOTP = () => {
+    // Generate a random 4-digit OTP
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  };
 
-		const generatedOTP = generateOTP(); // Generate OTP
+  const handleButtonClick = async () => {
+    if (phoneNumber === "") {
+      console.log("Please enter a phone number");
+      return;
+    }
 
-		try {
-			// // const accountSid = "AC05de73e04d00099ddf28737cab1b507e";
-			// // const authToken = "3a76e8ae4ea5146a86a6717bf8a4d6b0";
-			// const credentials = `${accountSid}:${authToken}`;
-			// const encodedCredentials = encode(credentials);
+    const generatedOTP = generateOTP(); // Generate OTP
 
-			const response = await axios.post(
-				"https://api.saferide.com.ng/authentication/signup/initialize",
-				{
-					phone_number: phoneNumber,
-					role: "rider",
-				}
-			);
+    try {
+      const response = await axios.post(
+        "https://api.saferide.com.ng/authentication/signup/initialize",
+        {
+          phone_number: phoneNumber,
+          role: "rider",
+        }
+      );
 
-			console.log(response.data);
+      console.log(response.data);
 
-			// Navigate to the next screen
-			navigation.navigate("CodeVerification");
-		} catch (error) {
-			console.log("There is an error:", error);
-			// console.log("There is an error:", error.response.data);
-		}
-	};
+      // Navigate to the next screen
+      navigation.navigate("CodeVerification");
+    } catch (error) {
+      console.log("There is an error:", error);
+    }
+  };
 
-	return (
-		<View style={styles.container}>
-			<Image source={require("../assets/snowy.jpg")} style={styles.image} />
-			<Text style={styles.label}>Enter Phone Number:</Text>
-			<TextInput
-				style={styles.input}
-				onChangeText={setPhoneNumber}
-				value={phoneNumber}
-				keyboardType="phone-pad"
-			/>
-			<TouchableOpacity style={styles.button} onPress={handleButtonClick}>
-				<Text style={styles.buttonText}>Get Started</Text>
-			</TouchableOpacity>
-		</View>
-	);
+  return (
+    <View style={styles.container}>
+      <Image source={require("../assets/snowy.jpg")} style={styles.image} />
+      <Text style={styles.label}>Enter Phone Number:</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={setPhoneNumber}
+        value={phoneNumber}
+        keyboardType="phone-pad"
+      />
+      <TouchableOpacity style={styles.button} onPress={handleButtonClick}>
+        <Text style={styles.buttonText}>Get Started</Text>
+      </TouchableOpacity>
+    </View>
+  );
 };
+
 
 const styles = StyleSheet.create({
 	container: {
