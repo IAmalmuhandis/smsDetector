@@ -54,7 +54,6 @@ const useApp = () => {
   };
 
   useEffect(() => {
-    console.log("requestReadSMSPermission:", requestReadSMSPermission);
     setAppState("init");
     checkPermissions();
   }, []);
@@ -71,7 +70,7 @@ const useApp = () => {
     errorCallbackStatus,
     hasReceiveSMSPermission,
     hasReadSMSPermission,
-    requestReadSMSPermission,
+    requestReadSMSPermission, // Include the requestReadSMSPermission function
     smsPermissionState,
     successCallbackStatus,
     smsValue,
